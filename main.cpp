@@ -123,9 +123,6 @@ static void TW_CALL toggle_fullscreen(void *data) {
 ////////////////////////////////////////////////////////////////////////////////
 // on init cb
 void on_init() {
-//	GLint maxUniformBlockSize = 0;
-//	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
-//	std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE : " << maxUniformBlockSize << std::endl;
 	const GLfloat CUBE_VERTICES[] = { -0.5f, -0.5f,  0.5f, 1,   // 0 
 	                                  -0.5f,  0.5f,  0.5f, 1,   // 1
 	                                   0.5f,  0.5f,  0.5f, 1,   // 2
@@ -195,16 +192,16 @@ void on_init() {
 	glBindBufferBase(GL_UNIFORM_BUFFER,
 	                 BUFFER_CASE_TO_FACE_COUNT,
 	                 buffers[BUFFER_CASE_TO_FACE_COUNT]);
-	glBindBufferBase(GL_UNIFORM_BUFFER,
-	                 BUFFER_EDGE_CONNECT_LIST,
-	                 buffers[BUFFER_EDGE_CONNECT_LIST]);
+//	glBindBufferBase(GL_UNIFORM_BUFFER,
+//	                 BUFFER_EDGE_CONNECT_LIST,
+//	                 buffers[BUFFER_EDGE_CONNECT_LIST]);
 
 	// configure textures
-//	glActiveTexture(GL_TEXTURE0 + TEXTURE_EDGE_CONNECT_LIST);
-//	glBindTexture(GL_TEXTURE_BUFFER, textures[TEXTURE_EDGE_CONNECT_LIST]);
-//		glTexBuffer(GL_TEXTURE_BUFFER,
-//		            GL_R32I,
-//		            buffers[BUFFER_EDGE_CONNECT_LIST]);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_EDGE_CONNECT_LIST);
+	glBindTexture(GL_TEXTURE_BUFFER, textures[TEXTURE_EDGE_CONNECT_LIST]);
+		glTexBuffer(GL_TEXTURE_BUFFER,
+		            GL_R32I,
+		            buffers[BUFFER_EDGE_CONNECT_LIST]);
 
 	// vertex arrays
 	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]);
@@ -225,18 +222,18 @@ void on_init() {
 	                       "marchingCube.glsl",
 	                       "",
 	                       GL_TRUE);
-//	glProgramUniform1i(programs[PROGRAM_MARCHING_CUBE],
-//	                   glGetUniformLocation(programs[PROGRAM_MARCHING_CUBE],
-//	                                         "sEdgeConnectList"),
-//	                   TEXTURE_EDGE_CONNECT_LIST);
+	glProgramUniform1i(programs[PROGRAM_MARCHING_CUBE],
+	                   glGetUniformLocation(programs[PROGRAM_MARCHING_CUBE],
+	                                         "sEdgeConnectList"),
+	                   TEXTURE_EDGE_CONNECT_LIST);
 	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
 	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
 	                                             "CaseToNumPolys"),
 	                      BUFFER_CASE_TO_FACE_COUNT);
-	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
-	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
-	                                             "EdgeConnectList"),
-	                      BUFFER_EDGE_CONNECT_LIST);
+//	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
+//	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
+//	                                             "EdgeConnectList"),
+//	                      BUFFER_EDGE_CONNECT_LIST);
 
 	// set global state
 	glEnable(GL_DEPTH_TEST);

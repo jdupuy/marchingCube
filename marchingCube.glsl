@@ -3,13 +3,10 @@
 uniform mat4 uModelViewProjection;
 uniform int uCase;
 
-//uniform isamplerBuffer sEdgeConnectList;
+uniform isamplerBuffer sEdgeConnectList;
 
 layout(std140)  uniform CaseToNumPolys {
 	ivec4 uCaseToNumPolys[64];
-};
-layout(std140)  uniform EdgeConnectList {
-	ivec4 uEdgeConnectList[320];
 };
 
 
@@ -108,22 +105,23 @@ void main() {
 	int edgeList, vindex0, vindex1;
 	vec3 vertex;
 	while(i<numPolys) {
-//		edgeList   = texelFetch(sEdgeConnectList, uCase * 5 + i).r;
-		int offset = uCase*5 + i;
-		edgeList   = uEdgeConnectList[offset/4][offset%4];
+		edgeList   = texelFetch(sEdgeConnectList, uCase*5 + i).r;
 		vindex0 = edgeList    & 0x7;
 		vindex1 = edgeList>>3 & 0x7;
-		vertex = 0.5 * voxelVertices[vindex1] + 0.5 * voxelVertices[vindex0];
+		vertex = 0.5 * voxelVertices[vindex1]
+		       + 0.5 * voxelVertices[vindex0];
 		gl_Position = uModelViewProjection * vec4(vertex,1.0);
 		EmitVertex();
 		vindex0 = edgeList>>6 & 0x7;
 		vindex1 = edgeList>>9 & 0x7;
-		vertex = 0.5 * voxelVertices[vindex1] + 0.5 * voxelVertices[vindex0];
+		vertex = 0.5 * voxelVertices[vindex1]
+		       + 0.5 * voxelVertices[vindex0];
 		gl_Position = uModelViewProjection * vec4(vertex,1.0);
 		EmitVertex();
 		vindex0 = edgeList>>12 & 0x7;
 		vindex1 = edgeList>>15 & 0x7;
-		vertex = 0.5 * voxelVertices[vindex1] + 0.5 * voxelVertices[vindex0];
+		vertex = 0.5 * voxelVertices[vindex1]
+		       + 0.5 * voxelVertices[vindex0];
 		gl_Position = uModelViewProjection * vec4(vertex,1.0);
 		EmitVertex();
 		EndPrimitive();

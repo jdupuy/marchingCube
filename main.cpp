@@ -26,7 +26,7 @@
 #include "Transform.hpp"    // Basic transformations
 #include "Framework.hpp"    // utility classes/functions
 
-#include "MarchingCubeTables.hpp" // tables of the marching cube
+#include "MarchingCubeTables.hpp" // tables for marching cube
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ Affine cameraInvWorld       = Affine::Translation(Vector3(0,0,-2.5));
 Projection cameraProjection = Projection::Perspective(FOVY,
                                                       1.0f,
                                                       0.1f,
-                                                      40.0f);
+                                                      10.0f);
 
 bool mouseLeft  = false;
 bool mouseRight = false;
@@ -94,16 +94,16 @@ GLfloat speed = 0.0f; // app speed (in ms)
 static GLint voxel_edge_to_vertices(GLint edge) {
 	GLint edges = 0;
 	switch(edge) {
-		case 0: edges =        0x1<<3; break;
-		case 1: edges =  0x1 | 0x2<<3; break;
-		case 2: edges =  0x2 | 0x3<<3; break;
-		case 3: edges =        0x3<<3; break;
-		case 4: edges =  0x4 | 0x5<<3; break;
-		case 5: edges =  0x5 | 0x6<<3; break;
-		case 6: edges =  0x6 | 0x7<<3; break;
-		case 7: edges =  0x4 | 0x7<<3; break;
-		case 8: edges =        0x4<<3; break;
-		case 9: edges =  0x1 | 0x5<<3; break;
+		case  0: edges = 0x0 | 0x1<<3; break;
+		case  1: edges = 0x1 | 0x2<<3; break;
+		case  2: edges = 0x2 | 0x3<<3; break;
+		case  3: edges = 0x0 | 0x3<<3; break;
+		case  4: edges = 0x4 | 0x5<<3; break;
+		case  5: edges = 0x5 | 0x6<<3; break;
+		case  6: edges = 0x6 | 0x7<<3; break;
+		case  7: edges = 0x4 | 0x7<<3; break;
+		case  8: edges = 0x0 | 0x4<<3; break;
+		case  9: edges = 0x1 | 0x5<<3; break;
 		case 10: edges = 0x2 | 0x6<<3; break;
 		case 11: edges = 0x3 | 0x7<<3; break;
 		default: break;
@@ -123,6 +123,9 @@ static void TW_CALL toggle_fullscreen(void *data) {
 ////////////////////////////////////////////////////////////////////////////////
 // on init cb
 void on_init() {
+// GLint maxUniformBlockSize = 0;
+// glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
+// std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE : " << maxUniformBlockSize << std::endl;
 	const GLfloat CUBE_VERTICES[] = { -0.5f, -0.5f,  0.5f, 1,   // 0 
 	                                  -0.5f,  0.5f,  0.5f, 1,   // 1
 	                                   0.5f,  0.5f,  0.5f, 1,   // 2
@@ -138,13 +141,14 @@ void on_init() {
 	GLint* edgeList = new GLint[2048];
 	GLint compressedVertexIndex = 0;
 
+	// compress table
 	for(GLint i = 0; i<256*5*4; i+=4) {
 		compressedVertexIndex = voxel_edge_to_vertices(EDGE_CONNECT_LIST[i]);
 		compressedVertexIndex|= voxel_edge_to_vertices(EDGE_CONNECT_LIST[i+1])
 		                      << 6;
 		compressedVertexIndex|= voxel_edge_to_vertices(EDGE_CONNECT_LIST[i+2])
 		                      << 12;
-		// drop fourth component
+		// drop fourth component (which is always -1)
 		edgeList[i/4] = compressedVertexIndex;
 	}
 
@@ -186,22 +190,20 @@ void on_init() {
 		             GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	delete[] edgeList;
-
 	// bind bases
 	glBindBufferBase(GL_UNIFORM_BUFFER,
 	                 BUFFER_CASE_TO_FACE_COUNT,
 	                 buffers[BUFFER_CASE_TO_FACE_COUNT]);
-//	glBindBufferBase(GL_UNIFORM_BUFFER,
-//	                 BUFFER_EDGE_CONNECT_LIST,
-//	                 buffers[BUFFER_EDGE_CONNECT_LIST]);
+	glBindBufferBase(GL_UNIFORM_BUFFER,
+	                 BUFFER_EDGE_CONNECT_LIST,
+	                 buffers[BUFFER_EDGE_CONNECT_LIST]);
 
 	// configure textures
-	glActiveTexture(GL_TEXTURE0 + TEXTURE_EDGE_CONNECT_LIST);
-	glBindTexture(GL_TEXTURE_BUFFER, textures[TEXTURE_EDGE_CONNECT_LIST]);
-		glTexBuffer(GL_TEXTURE_BUFFER,
-		            GL_R32I,
-		            buffers[BUFFER_EDGE_CONNECT_LIST]);
+//	glActiveTexture(GL_TEXTURE0 + TEXTURE_EDGE_CONNECT_LIST);
+//	glBindTexture(GL_TEXTURE_BUFFER, textures[TEXTURE_EDGE_CONNECT_LIST]);
+//		glTexBuffer(GL_TEXTURE_BUFFER,
+//		            GL_RGBA32I,
+//		            buffers[BUFFER_EDGE_CONNECT_LIST]);
 
 	// vertex arrays
 	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]);
@@ -222,23 +224,26 @@ void on_init() {
 	                       "marchingCube.glsl",
 	                       "",
 	                       GL_TRUE);
-	glProgramUniform1i(programs[PROGRAM_MARCHING_CUBE],
-	                   glGetUniformLocation(programs[PROGRAM_MARCHING_CUBE],
-	                                         "sEdgeConnectList"),
-	                   TEXTURE_EDGE_CONNECT_LIST);
+//	glProgramUniform1i(programs[PROGRAM_MARCHING_CUBE],
+//	                   glGetUniformLocation(programs[PROGRAM_MARCHING_CUBE],
+//	                                         "sEdgeConnectList"),
+//	                   TEXTURE_EDGE_CONNECT_LIST);
 	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
 	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
 	                                             "CaseToNumPolys"),
 	                      BUFFER_CASE_TO_FACE_COUNT);
-//	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
-//	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
-//	                                             "EdgeConnectList"),
-//	                      BUFFER_EDGE_CONNECT_LIST);
+	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
+	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
+	                                             "EdgeConnectList"),
+	                      BUFFER_EDGE_CONNECT_LIST);
 
 	// set global state
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
+//	glEnable(GL_CULL_FACE);
 	glClearColor(0.13,0.13,0.15,1.0);
+
+	// clean up
+	delete[] edgeList;
 
 #ifdef _ANT_ENABLE
 	// start ant
@@ -349,7 +354,8 @@ void on_update() {
 
 	// run marching cube
 	glUseProgram(programs[PROGRAM_MARCHING_CUBE]);
-	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]); // hack
+	glBindVertexArray(vertexArrays[VERTEX_ARRAY_EMPTY]);
+//	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]); // hack
 		glDrawArrays(GL_POINTS, 0, 1);
 
 	glBindVertexArray(0);
@@ -487,7 +493,7 @@ int main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("texture filtering");
+	glutCreateWindow("marching cube");
 
 	// init glew
 	glewExperimental = GL_TRUE; // segfault on GenVertexArrays on Nvidia otherwise

@@ -36,7 +36,7 @@ const GLint CASE_TO_FACE_COUNT[] = {
 };
 
 // face construction table
-// 256*5 entries
+// 256*5*4 entries
 const GLint EDGE_CONNECT_LIST[] = {
 	-1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1, 
 	 0,  8,  3, -1,  -1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1, 

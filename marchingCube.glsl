@@ -3,16 +3,19 @@
 uniform mat4 uModelViewProjection;
 uniform int uCase;
 
-uniform isamplerBuffer sEdgeConnectList;
+//uniform isamplerBuffer sEdgeConnectList;
 
 layout(std140)  uniform CaseToNumPolys {
 	ivec4 uCaseToNumPolys[64];
 };
 
+layout(std140)  uniform EdgeConnectList {
+	ivec4 uEdgeConnectList[512];
+};
 
 #ifdef _VERTEX_
 
-layout(location=0) in vec4 iDummy;
+//layout(location=0) in vec4 iDummy;
 
 void main() {
 	// empty
@@ -22,7 +25,7 @@ void main() {
 
 #ifdef _GEOMETRY_
 /*
- *         3D  coordinate system Vertices
+ *         3D  coordinate system
  *
  *             [+z] 
  *              |
@@ -88,7 +91,7 @@ void main() {
 	float zmin = -voxelHalfSize;
 	float zmax = +voxelHalfSize;
 
-	// follow gpu gems3 convention
+	// follow tables convention (GPU Gems3)
 	vec3 voxelVertices[8];
 	voxelVertices[0] = vec3(xmax, ymin, zmin);
 	voxelVertices[1] = vec3(xmax, ymin, zmax);
@@ -102,26 +105,28 @@ void main() {
 	// emit vertices using the marching cube tables
 	int numPolys = uCaseToNumPolys[uCase/4][uCase%4];
 	int i = 0;
-	int edgeList, vindex0, vindex1;
+	int edgeList, idx1, idx2;
 	vec3 vertex;
 	while(i<numPolys) {
-		edgeList   = texelFetch(sEdgeConnectList, uCase*5 + i).r;
-		vindex0 = edgeList    & 0x7;
-		vindex1 = edgeList>>3 & 0x7;
-		vertex = 0.5 * voxelVertices[vindex1]
-		       + 0.5 * voxelVertices[vindex0];
+		int offset = uCase*5 + i;
+		edgeList   = uEdgeConnectList[offset/4][offset%4];
+//		edgeList   = texelFetch(sEdgeConnectList, offset/4)[offset%4];
+		idx1 = edgeList    & 0x7;
+		idx2 = edgeList>>3 & 0x7;
+		vertex = 0.5 * voxelVertices[idx1]
+		       + 0.5 * voxelVertices[idx2];
 		gl_Position = uModelViewProjection * vec4(vertex,1.0);
 		EmitVertex();
-		vindex0 = edgeList>>6 & 0x7;
-		vindex1 = edgeList>>9 & 0x7;
-		vertex = 0.5 * voxelVertices[vindex1]
-		       + 0.5 * voxelVertices[vindex0];
+		idx1 = edgeList>>6 & 0x7;
+		idx2 = edgeList>>9 & 0x7;
+		vertex = 0.5 * voxelVertices[idx1]
+		       + 0.5 * voxelVertices[idx2];
 		gl_Position = uModelViewProjection * vec4(vertex,1.0);
 		EmitVertex();
-		vindex0 = edgeList>>12 & 0x7;
-		vindex1 = edgeList>>15 & 0x7;
-		vertex = 0.5 * voxelVertices[vindex1]
-		       + 0.5 * voxelVertices[vindex0];
+		idx1 = edgeList>>12 & 0x7;
+		idx2 = edgeList>>15 & 0x7;
+		vertex = 0.5 * voxelVertices[idx1]
+		       + 0.5 * voxelVertices[idx2];
 		gl_Position = uModelViewProjection * vec4(vertex,1.0);
 		EmitVertex();
 		EndPrimitive();

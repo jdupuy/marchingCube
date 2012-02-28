@@ -194,16 +194,16 @@ void on_init() {
 	glBindBufferBase(GL_UNIFORM_BUFFER,
 	                 BUFFER_CASE_TO_FACE_COUNT,
 	                 buffers[BUFFER_CASE_TO_FACE_COUNT]);
-	glBindBufferBase(GL_UNIFORM_BUFFER,
-	                 BUFFER_EDGE_CONNECT_LIST,
-	                 buffers[BUFFER_EDGE_CONNECT_LIST]);
+//	glBindBufferBase(GL_UNIFORM_BUFFER,
+//	                 BUFFER_EDGE_CONNECT_LIST,
+//	                 buffers[BUFFER_EDGE_CONNECT_LIST]);
 
 	// configure textures
-//	glActiveTexture(GL_TEXTURE0 + TEXTURE_EDGE_CONNECT_LIST);
-//	glBindTexture(GL_TEXTURE_BUFFER, textures[TEXTURE_EDGE_CONNECT_LIST]);
-//		glTexBuffer(GL_TEXTURE_BUFFER,
-//		            GL_RGBA32I,
-//		            buffers[BUFFER_EDGE_CONNECT_LIST]);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_EDGE_CONNECT_LIST);
+	glBindTexture(GL_TEXTURE_BUFFER, textures[TEXTURE_EDGE_CONNECT_LIST]);
+		glTexBuffer(GL_TEXTURE_BUFFER,
+		            GL_RGBA32I,
+		            buffers[BUFFER_EDGE_CONNECT_LIST]);
 
 	// vertex arrays
 	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]);
@@ -224,22 +224,22 @@ void on_init() {
 	                       "marchingCube.glsl",
 	                       "",
 	                       GL_TRUE);
-//	glProgramUniform1i(programs[PROGRAM_MARCHING_CUBE],
-//	                   glGetUniformLocation(programs[PROGRAM_MARCHING_CUBE],
-//	                                         "sEdgeConnectList"),
-//	                   TEXTURE_EDGE_CONNECT_LIST);
+	glProgramUniform1i(programs[PROGRAM_MARCHING_CUBE],
+	                   glGetUniformLocation(programs[PROGRAM_MARCHING_CUBE],
+	                                         "sEdgeConnectList"),
+	                   TEXTURE_EDGE_CONNECT_LIST);
 	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
 	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
 	                                             "CaseToNumPolys"),
 	                      BUFFER_CASE_TO_FACE_COUNT);
-	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
-	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
-	                                             "EdgeConnectList"),
-	                      BUFFER_EDGE_CONNECT_LIST);
+//	glUniformBlockBinding(programs[PROGRAM_MARCHING_CUBE],
+//	                      glGetUniformBlockIndex(programs[PROGRAM_MARCHING_CUBE],
+//	                                             "EdgeConnectList"),
+//	                      BUFFER_EDGE_CONNECT_LIST);
 
 	// set global state
 	glEnable(GL_DEPTH_TEST);
-//	glEnable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	glClearColor(0.13,0.13,0.15,1.0);
 
 	// clean up
@@ -354,8 +354,8 @@ void on_update() {
 
 	// run marching cube
 	glUseProgram(programs[PROGRAM_MARCHING_CUBE]);
-	glBindVertexArray(vertexArrays[VERTEX_ARRAY_EMPTY]);
-//	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]); // hack
+//	glBindVertexArray(vertexArrays[VERTEX_ARRAY_EMPTY]);
+	glBindVertexArray(vertexArrays[VERTEX_ARRAY_CUBE]); // hack for amd
 		glDrawArrays(GL_POINTS, 0, 1);
 
 	glBindVertexArray(0);

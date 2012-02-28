@@ -3,15 +3,15 @@
 uniform mat4 uModelViewProjection;
 uniform int uCase;
 
-//uniform isamplerBuffer sEdgeConnectList;
+uniform isamplerBuffer sEdgeConnectList;
 
 layout(std140)  uniform CaseToNumPolys {
 	ivec4 uCaseToNumPolys[64];
 };
 
-layout(std140)  uniform EdgeConnectList {
-	ivec4 uEdgeConnectList[512];
-};
+//layout(std140)  uniform EdgeConnectList {
+//	ivec4 uEdgeConnectList[512];
+//};
 
 #ifdef _VERTEX_
 
@@ -109,8 +109,8 @@ void main() {
 	vec3 vertex;
 	while(i<numPolys) {
 		int offset = uCase*5 + i;
-		edgeList   = uEdgeConnectList[offset/4][offset%4];
-//		edgeList   = texelFetch(sEdgeConnectList, offset/4)[offset%4];
+//		edgeList   = uEdgeConnectList[offset/4][offset%4];
+		edgeList   = texelFetch(sEdgeConnectList, offset/4)[offset%4];
 		idx1 = edgeList    & 0x7;
 		idx2 = edgeList>>3 & 0x7;
 		vertex = 0.5 * voxelVertices[idx1]

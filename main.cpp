@@ -447,13 +447,13 @@ void on_mouse_motion(GLint x, GLint y) {
 
 	if(mouseLeft)
 	{
-		cameraInvWorld.RotateAboutWorldX(5.0f*MOUSE_YREL*deltaTicks);
-		cameraInvWorld.RotateAboutLocalY(5.0f*MOUSE_XREL*deltaTicks);
+		cameraInvWorld.RotateAboutWorldX(1.0f*MOUSE_YREL*deltaTicks);
+		cameraInvWorld.RotateAboutLocalY(1.0f*MOUSE_XREL*deltaTicks);
 	}
 	if(mouseRight)
 	{
-		cameraInvWorld.TranslateWorld(deltaTicks*Vector3( 2.0f*MOUSE_XREL,
-		                                                 -2.0f*MOUSE_YREL,
+		cameraInvWorld.TranslateWorld(deltaTicks*Vector3( 0.3f*MOUSE_XREL,
+		                                                 -0.3f*MOUSE_YREL,
 		                                                  0));
 	}
 }
